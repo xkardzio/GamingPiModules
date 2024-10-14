@@ -1,7 +1,7 @@
 from . import KeyBinder
 import json
 
-example_config = '''
+example_config = """
 {
     "KeyConfig": [
         {
@@ -96,14 +96,13 @@ example_config = '''
         }
     ]
 }
-'''
+"""
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("****************\n")
-    print('Module KeyBinder\n')
+    print("Module KeyBinder\n")
     print("****************\n\n")
-    
-    
+
     config = json.loads(example_config)
     kb = KeyBinder(config)
     kb.run()
