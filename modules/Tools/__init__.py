@@ -1,5 +1,6 @@
 from enum import Enum
 import platform
+from flask import jsonify
 
 class PlatformType(Enum):
     UNKNOWN = 0
@@ -23,5 +24,14 @@ def get_platform() -> PlatformType:
                 return PlatformType.LINUX
     else:
         return PlatformType.UNKNOWN
+    
+def get_function_result(result):
+    if isinstance(result, tuple):
+        status_code, message = result
+        if isinstance(message, dict):
+            return({"status": status_code, **message})
+        return jsonify({"status": status_code, "message": message})
+    else:  
+        return jsonify({"status": result})
     
 PLATFORM = get_platform()

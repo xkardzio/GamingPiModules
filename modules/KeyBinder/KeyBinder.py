@@ -17,8 +17,6 @@ else:
         def when_released(self, func):
             pass
         
-        
-  
 class Key:
     profile = "default"
     
@@ -26,7 +24,7 @@ class Key:
         self._GPIO_PIN = GPIO_PIN
         self._profiles = {profile['name']: profile['trigger'] for profile in profiles}
         
-        self._button = Button(pin = self._GPIO_PIN, hold_time = 0.02)
+        self._button = Button(pin=self._GPIO_PIN, hold_time=0.02)
         self._button.when_held = self.pressed
         self._button.when_released = self.released
         self.running = False
@@ -70,6 +68,7 @@ class KeyBinder:
                 config = json.loads(config)
             self.load_config(config)
         Key.profile = self._profile
+        self.running = False  # Initialize running flag
 
     @property
     def profile(self):
@@ -81,43 +80,41 @@ class KeyBinder:
         Key.profile = value
 
     def load_config(self, config):
-        try:
-            used_pins = []
+        used_pins = []
 
-            if isinstance(config, str):
-                config = json.loads(config)
+        if isinstance(config, str):
+            config = json.loads(config)
 
-            for key_info in config.get("KeyConfig", []):
-                if "gpio_pin" not in key_info:
-                    raise ValueError("Missing 'gpio_pin' in key configuration.")
+        for key_info in config.get("KeyConfig", []):
+            if "gpio_pin" not in key_info:
+                raise ValueError("Missing 'gpio_pin' in key configuration.")
 
-                gpio_pin = key_info["gpio_pin"]
+            gpio_pin = key_info["gpio_pin"]
 
-                if gpio_pin not in self._correctPinsNumbers:
-                    raise ValueError(f"Invalid GPIO pin: {gpio_pin}")
+            if gpio_pin not in self._correctPinsNumbers:
+                raise ValueError(f"Invalid GPIO pin: {gpio_pin}")
 
-                if gpio_pin in used_pins:
-                    raise ValueError(f"GPIO pin {gpio_pin} is already used.")
+            if gpio_pin in used_pins:
+                raise ValueError(f"GPIO pin {gpio_pin} is already used.")
 
-                used_pins.append(gpio_pin)
+            used_pins.append(gpio_pin)
 
-                if "profiles" not in key_info:
-                    raise ValueError(f"Missing 'profiles' for GPIO pin: {gpio_pin}")
+            if "profiles" not in key_info:
+                raise ValueError(f"Missing 'profiles' for GPIO pin: {gpio_pin}")
 
-                profiles = key_info["profiles"]
+            profiles = key_info["profiles"]
 
-                self._keys[gpio_pin] = Key(gpio_pin, profiles)
-
-        except Exception as e:
-            print(f"Error loading config: {e}")
+            self._keys[gpio_pin] = Key(gpio_pin, profiles)
+        
+        return True
     
-    def __str__(self):
+    def get_config(self):
         keys_info = []
         for gpio_pin, key in self._keys.items():
             profiles_info = [{"name": profile_name, "trigger": trigger} for profile_name, trigger in key._profiles.items()]
             keys_info.append({"gpio_pin": gpio_pin, "profiles": profiles_info})
 
-        return json.dumps({"KeyConfig": keys_info})
+        return keys_info
 
     
     def run(self):
@@ -128,4 +125,6 @@ class KeyBinder:
         thread = threading.Thread(target=loop)
         self.running = True
         thread.start()
-    
+
+    def stop(self):
+        self.running = False 

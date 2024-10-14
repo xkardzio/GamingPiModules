@@ -1,6 +1,21 @@
 from ..KeyBinder import KeyBinder
+from ..Service import Service
 
-class KeyBinderService(KeyBinder):
-    BASE_URL = 'key-binder'
+class KeyBinderService(KeyBinder, Service):
+    
     def __init__(self, config=None):
-        super().__init__(config)
+        KeyBinder.__init__(self, config)
+        Service.__init__(self, base_url="key-binder", template="key-binder.html")
+        
+    def load_config(self, config):
+        try:
+            KeyBinder.load_config(self, config)
+            return self.HttpCodes.OK
+        except Exception as e:
+            return self.HttpCodes.BAD_REQUEST, str(e) 
+            
+    def get_config(self):
+        return self.HttpCodes.OK, {"KeyConfig" : super().get_config()}
+
+        
+        
