@@ -1,21 +1,15 @@
 import json
 from ..Tools import PLATFORM, PlatformType
-import keyboard
 import threading
 
 if PLATFORM == PlatformType.RPI:
+    import keyboard
     from gpiozero import Button
 else:
-    # Button stub
-    class Button:
-        def __init__(self, pin, hold_time):
-            pass
+    from ..Stubs import keyboard
+    from ..Stubs.gpiozero import Button
+    
 
-        def when_held(self, func):
-            pass
-
-        def when_released(self, func):
-            pass
 
 
 class Key:
@@ -109,6 +103,9 @@ class KeyBinder:
         Key.profile = value
 
     def load_config(self, config):
+        if self._keys:
+            self.delete_config()
+            
         used_pins = []
 
         if isinstance(config, str):
@@ -148,6 +145,12 @@ class KeyBinder:
 
         return keys_info
 
+    def delete_config(self):
+        for key in self._keys.values():
+            key.released()
+            
+        self._keys = {}
+    
     def run(self):
         def loop():
             while self.running:
