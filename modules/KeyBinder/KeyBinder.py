@@ -51,6 +51,9 @@ class Key:
             print(
                 f"There isn't such key for mode {Key.profile} - key on GPIO pin {self.gpio_pin}"
             )
+            
+    def is_pressed(self):
+        return self._button.is_held
 
 
 class KeyBinder:
@@ -91,7 +94,7 @@ class KeyBinder:
                 config = json.loads(config)
             self.load_config(config)
         Key.profile = self._profile
-        self.running = False  # Initialize running flag
+        self.running = False
 
     @property
     def profile(self):
@@ -99,8 +102,22 @@ class KeyBinder:
 
     @profile.setter
     def profile(self, value):
+        if isinstance(value, dict):
+            value = value["profile"]
+            
+        pressed = []
+        for key in self._keys.values():
+            if key.is_pressed():
+                pressed.append(key)
+        
+        for key in self._keys.values():
+            key.released()
+        
         self._profile = value
         Key.profile = value
+        
+        for key in pressed:
+            key.pressed()
 
     def load_config(self, config):
         if self._keys:

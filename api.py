@@ -20,6 +20,14 @@ def get_config():
     config = kb.get_config()
     return get_function_result(kb.get_config())
 
+@app.route(f"{apiService.base_url}/{kb.base_url}/profile", methods=["POST"])
+def change_profile():
+    kb.profile = request.json
+    return get_function_result(kb.profile)
+
+@app.route(f"{apiService.base_url}/{kb.base_url}/profile", methods=["GET"])
+def get_profile():
+    return get_function_result(kb.profile)
 
 @app.route(f"{apiService.base_url}/", methods=["GET"])
 @app.route(f"/", methods=["GET"])
