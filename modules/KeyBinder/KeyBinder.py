@@ -148,6 +148,7 @@ class KeyBinder:
     def delete_config(self):
         for key in self._keys.values():
             key.released()
+            key._button.close()
             
         self._keys = {}
     
