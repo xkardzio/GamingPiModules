@@ -17,11 +17,11 @@ class KeyBinderService(KeyBinder, Service):
 
     def get_config(self):
         return self.HttpCodes.OK, {"KeyConfig": super().get_config()}
-    
+
     @property
     def profile(self):
         return self.HttpCodes.OK, KeyBinder.profile.fget(self)
-    
+
     @profile.setter
     def profile(self, value):
         KeyBinder.profile.fset(self, value)

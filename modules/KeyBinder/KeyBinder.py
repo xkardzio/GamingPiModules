@@ -8,8 +8,6 @@ if PLATFORM == PlatformType.RPI:
 else:
     from ..Stubs import keyboard
     from ..Stubs.gpiozero import Button
-    
-
 
 
 class Key:
@@ -51,7 +49,7 @@ class Key:
             print(
                 f"There isn't such key for mode {Key.profile} - key on GPIO pin {self.gpio_pin}"
             )
-            
+
     def is_pressed(self):
         return self._button.is_held
 
@@ -104,25 +102,25 @@ class KeyBinder:
     def profile(self, value):
         if isinstance(value, dict):
             value = value["profile"]
-            
+
         pressed = []
         for key in self._keys.values():
             if key.is_pressed():
                 pressed.append(key)
-        
+
         for key in self._keys.values():
             key.released()
-        
+
         self._profile = value
         Key.profile = value
-        
+
         for key in pressed:
             key.pressed()
 
     def load_config(self, config):
         if self._keys:
             self.delete_config()
-            
+
         used_pins = []
 
         if isinstance(config, str):
@@ -166,9 +164,9 @@ class KeyBinder:
         for key in self._keys.values():
             key.released()
             key._button.close()
-            
+
         self._keys = {}
-    
+
     def run(self):
         def loop():
             while self.running:
