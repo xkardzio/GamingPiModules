@@ -46,7 +46,7 @@ class Animation:
             raise ValueError(f"Unknown animation type: {animation_type}")
         return ANIMATION_CLASSES[animation_type](**data)
     
-    @classmethod
+    @staticmethod
     def register(cls):
         ANIMATION_CLASSES[cls.__name__] = cls
         return cls

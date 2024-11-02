@@ -1,6 +1,6 @@
-from LedSerialHandler import LedSerialHandler
-from Led import Led
-from LedAnimations import Pulse, Blink, Animation
+from .LedSerialHandler import LedSerialHandler
+from .Led import Led
+from .LedAnimations import Pulse, Blink, Animation
 import json
 
 import time

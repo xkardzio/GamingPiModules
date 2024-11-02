@@ -1,7 +1,7 @@
 import threading
 import time
-from LedSerialHandler import LedSerialHandler
-from LedAnimations import Animation
+from .LedSerialHandler import LedSerialHandler
+from .LedAnimations import Animation
 
 class Led:
     serialHandler = None
