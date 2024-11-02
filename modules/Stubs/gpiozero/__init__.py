@@ -7,3 +7,6 @@ class Button:
 
     def when_released(self, func):
         pass
+    
+    def close(self):
+        pass
