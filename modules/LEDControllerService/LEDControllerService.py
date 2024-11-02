@@ -22,33 +22,37 @@ class LEDControllerService(Service):
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}", methods=["GET"])
         def LEDController_page():
             return render_template(f"{self.MODULE_URL}/{self.template}")
-        
+
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/leds", methods=["GET"])
         def get_leds():
             return get_function_result(self.leds)
-        
+
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/leds", methods=["POST"])
         def add_leds():
             return get_function_result(self.add_leds(request.json))
-        
-        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/<int:led_id>/set-value", methods=["post"])
+
+        @self.app.route(
+            f"{self.base_url}/{self.MODULE_URL}/<int:led_id>/set-value",
+            methods=["post"],
+        )
         def set_led_value(led_id):
             return get_function_result(self.set_led_value(led_id, request.json))
-        
-        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/led-serial-handler/running", methods=["GET"])
+
+        @self.app.route(
+            f"{self.base_url}/{self.MODULE_URL}/led-serial-handler/running",
+            methods=["GET"],
+        )
         def get_led_serial_handler_running():
             return get_function_result(self._led_serial_handler.running)
-    
+
     def add_leds(self, data):
         try:
-            leds = data.get('leds', [])
+            leds = data.get("leds", [])
             if not isinstance(leds, list):
                 raise ValueError("Expected 'leds' to be a list.")
 
             for led in leds:
-                self._led_serial_handler.add_led(
-                    Led.from_json(led)
-                )
+                self._led_serial_handler.add_led(Led.from_json(led))
             return self.HttpCodes.OK
         except Exception as e:
             return self.HttpCodes.BAD_REQUEST, str(e)
@@ -65,7 +69,7 @@ class LEDControllerService(Service):
                 self.HttpCodes.INTERNAL_SERVER_ERROR,
                 "LED Serial Handler not initialized",
             )
-            
+
     def set_led_value(self, led_id, data):
         try:
             led = self._led_serial_handler.leds.get(led_id)

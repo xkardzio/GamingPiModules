@@ -56,7 +56,7 @@ class LedSerialHandler:
         self.serial_port = serial.Serial(port, baudrate=baudrate, timeout=timeout)
         time.sleep(init_time)
         self.serial_port.reset_input_buffer()
-        
+
         if not self.init():
             raise Exception("Error initializing serial port")
 
