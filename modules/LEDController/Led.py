@@ -121,7 +121,6 @@ class Led:
         self._animation_delay = max(0, value)
 
     def update(self, **kwargs):
-        print(f"Pin: {self.pin} - Update: {kwargs}")
         if "value" in kwargs:
             self.value = kwargs["value"]
         if "min" in kwargs:
@@ -136,6 +135,13 @@ class Led:
             self.animation_loop = kwargs["animationLoop"]
         if "animationDelay" in kwargs:
             self.animation_delay = kwargs["animationDelay"]
+        if "scaleAnimation" in kwargs:
+            self._scale_animation = kwargs["scaleAnimation"]
+        if "maxBrightness" in kwargs:
+            self.max = kwargs["maxBrightness"]
+        if "minBrightness" in kwargs:
+            self.min = kwargs["minBrightness"]
+        
 
     def _process_animation(self):
         if self.animation is None:

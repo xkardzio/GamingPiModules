@@ -1,6 +1,5 @@
 from ..KeyBinder import KeyBinder
 from ..Service import Service
-from ..Tools import get_function_result
 
 from flask import render_template, request
 
@@ -21,36 +20,30 @@ class KeyBinderService(KeyBinder, Service):
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/config", methods=["POST"])
         def load_config():
             config = request.json
-            return get_function_result(self.load_config(config))
+            try:
+                KeyBinder.load_config(self, config)
+                return {"message": "Config loaded successfully"}, self.HttpCodes.OK
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/config", methods=["GET"])
         def get_config():
-            return get_function_result(self.get_config())
+            try:
+                return {"KeyConfig" : KeyBinder.get_config(self)}, self.HttpCodes.OK
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.INTERNAL_SERVER_ERROR
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/profile", methods=["POST"])
         def change_profile():
-            self.profile = request.json
-            return get_function_result(self.profile)
+            try:
+                profile = request.json["profile"]
+            except KeyError:
+                return {"error": "Field 'profile' is required"}, self.HttpCodes.BAD_REQUEST
+                
+            KeyBinder.profile.fset(self, profile)
+            return {"message": "Profile changed successfully"}, self.HttpCodes.OK
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/profile", methods=["GET"])
         def get_profile():
-            return get_function_result(self.profile)
+            return {"profile": KeyBinder.profile.fget(self)}, self.HttpCodes.OK
 
-    def load_config(self, config):
-        try:
-            KeyBinder.load_config(self, config)
-            return self.HttpCodes.OK
-        except Exception as e:
-            return self.HttpCodes.BAD_REQUEST, str(e)
-
-    def get_config(self):
-        return self.HttpCodes.OK, {"KeyConfig": super().get_config()}
-
-    @property
-    def profile(self):
-        return self.HttpCodes.OK, KeyBinder.profile.fget(self)
-
-    @profile.setter
-    def profile(self, value):
-        KeyBinder.profile.fset(self, value)
-        return self.HttpCodes.OK

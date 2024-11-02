@@ -1,7 +1,6 @@
 from ..LEDController import LedSerialHandler, Led
 from ..LEDController.LedAnimations import Animation
 
-from ..Tools import get_function_result
 from ..Service import Service
 
 from flask import render_template, request
@@ -25,15 +24,25 @@ class LEDControllerService(Service):
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/leds", methods=["GET"])
         def get_leds():
-            return get_function_result(self.leds)
+            if self._led_serial_handler is None:
+                return {"error": "LED serial handler not found."}, self.HttpCodes.INTERNAL_SERVER_ERROR
+            try:
+                leds = [led.to_json() for led in self._led_serial_handler.leds.values()]
+                return {"leds": leds}, self.HttpCodes.OK
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.INTERNAL_SERVER_ERROR
+                
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/leds/add", methods=["POST"])
         def add_leds():
-            return get_function_result(self.add_leds(request.json))
+            try:
+                self.add_leds(request.json)
+                return {"message": "LEDs added successfully"}, self.HttpCodes.OK
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/leds", methods=["POST"])
         def update_leds():
-            print(request.json)
             try:
                 pins = request.json.get("pins", [])
                 newConfig = request.json.get("newConfig", {})
@@ -49,30 +58,43 @@ class LEDControllerService(Service):
                 return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(
-            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>",
+            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_pin>",
             methods=["GET"],
         )
-        def get_led(led_id):
+        def get_led(led_pin):
             try:
-                led = self._led_serial_handler.leds.get(led_id)
+                led = self._led_serial_handler.leds.get(led_pin)
+                if led is None:
+                    raise KeyError
                 return {"led": led.to_json()}, self.HttpCodes.OK
+            except KeyError :
+                return {"error": f"LED with pin {led_pin} not found."}, self.HttpCodes.NOT_FOUND
             except Exception as e:
-                return self.HttpCodes.INTERNAL_SERVER_ERROR, str(e)
+                return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(
-            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>",
-            methods=["post"],
+            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_pin>",
+            methods=["POST"],
         )
-        def update_led(led_id):
-            return get_function_result(self.update_led(led_id, request.json))
+        def update_led(led_pin):
+            try:
+                led = self._led_serial_handler.leds.get(led_pin)
+                if led is None:
+                    raise KeyError
+                led.update(**request.json)
+                return {"message": "LED updated successfully"}, self.HttpCodes.OK
+            except KeyError:
+                return {"error": f"LED with pin {led_pin} not found."}, self.HttpCodes.NOT_FOUND
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(
-            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>/animation",
+            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_pin>/animation",
             methods=["GET"],
         )
-        def get_led_animation(led_id):
+        def get_led_animation(led_pin):
             try:
-                led_animation = self._led_serial_handler.leds.get(led_id).animation
+                led_animation = self._led_serial_handler.leds.get(led_pin).animation
                 led_animation = (
                     led_animation.to_json() if led_animation is not None else {}
                 )
@@ -81,20 +103,33 @@ class LEDControllerService(Service):
                 return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(
-            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>/animation",
+            f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_pin>/animation",
             methods=["post"],
         )
-        def update_led_animation(led_id):
-            return get_function_result(
-                self.update_led(led_id, {"animation": request.json})
-            )
+        def update_led_animation(led_pin):
+            try:
+                led = self._led_serial_handler.leds.get(led_pin)
+                if led is None:
+                    raise KeyError
+                animation = request.json.get("animation")
+                if animation is None:
+                    raise ValueError("Field 'animation' is required.")
+                led.animation = Animation.from_json(animation)
+                return {"message": "Animation updated successfully"}, self.HttpCodes.OK
+            except KeyError as e:
+                return {"error": f"LED with id {led_pin} not found."}, self.HttpCodes.NOT_FOUND
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
 
         @self.app.route(
             f"{self.base_url}/{self.MODULE_URL}/led-serial-handler/running",
             methods=["GET"],
         )
         def get_led_serial_handler_running():
-            return get_function_result(self._led_serial_handler.running)
+            try:
+                return {"running": self._led_serial_handler.running}, self.HttpCodes.OK
+            except Exception as e:
+                return {"error": str(e)}, self.HttpCodes.INTERNAL_SERVER_ERROR
 
     def add_leds(self, data):
         try:
@@ -104,35 +139,6 @@ class LEDControllerService(Service):
 
             for led in leds:
                 self._led_serial_handler.add_led(Led.from_json(led))
-            return self.HttpCodes.OK
-        except Exception as e:
-            return self.HttpCodes.BAD_REQUEST, str(e)
-
-    @property
-    def leds(self):
-        if self._led_serial_handler is not None:
-            serialized_leds = []
-            for led in self._led_serial_handler.leds.values():
-                serialized_leds.append(led.to_json())
-            return self.HttpCodes.OK, {"leds": serialized_leds}
-        else:
-            return (
-                self.HttpCodes.INTERNAL_SERVER_ERROR,
-                "LED Serial Handler not initialized",
-            )
-
-    def led(self, led_id):
-        led = self._led_serial_handler.leds.get(led_id)
-        if led is None:
-            return self.HttpCodes.NOT_FOUND, f"LED with id {led_id} not found."
-        return self.HttpCodes.OK, led.to_json()
-
-    def update_led(self, led_id, data):
-        try:
-            led = self._led_serial_handler.leds.get(led_id)
-            if led is None:
-                raise ValueError(f"LED with id {led_id} not found.")
-            led.update(**data)
             return self.HttpCodes.OK
         except Exception as e:
             return self.HttpCodes.BAD_REQUEST, str(e)

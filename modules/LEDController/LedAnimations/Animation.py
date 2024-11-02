@@ -1,6 +1,8 @@
 from enum import Enum
 import json
 
+
+
 ANIMATION_CLASSES = {}
 
 
@@ -35,7 +37,7 @@ class Animation:
             return obj
 
         data = {k.lstrip("_"): serialize(v) for k, v in self.__dict__.items()}
-        return json.dumps(data, ensure_ascii=False)
+        return data
 
     @classmethod
     def from_json(cls, json_data):

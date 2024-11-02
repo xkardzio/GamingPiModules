@@ -27,15 +27,4 @@ def get_platform() -> PlatformType:
     else:
         return PlatformType.UNKNOWN
 
-
-def get_function_result(result):
-    if isinstance(result, tuple):
-        status_code, message = result
-        if isinstance(message, dict):
-            return {"status": status_code, **message}
-        return jsonify({"status": status_code, "message": message})
-    else:
-        return jsonify({"status": result})
-
-
 PLATFORM = get_platform()

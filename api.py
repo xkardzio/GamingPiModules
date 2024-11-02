@@ -2,11 +2,10 @@ from modules import (
     MainService,
     KeyBinderService,
     LEDControllerService,
-    get_function_result,
 )
 from modules.LEDController import LedSerialHandler
 
-from flask import Flask, request, render_template
+from flask import Flask
 import os
 
 BASE_URL = "/launcher-api"
@@ -34,4 +33,4 @@ ledc = LEDControllerService(
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False)
+    app.run(host="0.0.0.0", debug=True)
