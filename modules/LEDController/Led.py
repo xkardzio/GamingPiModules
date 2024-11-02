@@ -119,9 +119,9 @@ class Led:
     @animation_delay.setter
     def animation_delay(self, value):
         self._animation_delay = max(0, value)
-    
+
     def update(self, **kwargs):
-        print(f'Pin: {self.pin} - Update: {kwargs}')
+        print(f"Pin: {self.pin} - Update: {kwargs}")
         if "value" in kwargs:
             self.value = kwargs["value"]
         if "min" in kwargs:
@@ -192,5 +192,4 @@ class Led:
             "animationRunning": self.animation_running,
             "animationLoop": self.animation_loop,
             "animationDelay": self.animation_delay,
-            
         }

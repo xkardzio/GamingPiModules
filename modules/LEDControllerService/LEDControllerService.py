@@ -47,7 +47,7 @@ class LEDControllerService(Service):
                 return {"message": "LEDs updated successfully"}, self.HttpCodes.OK
             except Exception as e:
                 return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
-                    
+
         @self.app.route(
             f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>",
             methods=["GET"],
@@ -57,7 +57,7 @@ class LEDControllerService(Service):
                 led = self._led_serial_handler.leds.get(led_id)
                 return {"led": led.to_json()}, self.HttpCodes.OK
             except Exception as e:
-                return self.HttpCodes.INTERNAL_SERVER_ERROR, str(e)   
+                return self.HttpCodes.INTERNAL_SERVER_ERROR, str(e)
 
         @self.app.route(
             f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>",
@@ -65,7 +65,7 @@ class LEDControllerService(Service):
         )
         def update_led(led_id):
             return get_function_result(self.update_led(led_id, request.json))
-        
+
         @self.app.route(
             f"{self.base_url}/{self.MODULE_URL}/leds/<int:led_id>/animation",
             methods=["GET"],
@@ -73,7 +73,9 @@ class LEDControllerService(Service):
         def get_led_animation(led_id):
             try:
                 led_animation = self._led_serial_handler.leds.get(led_id).animation
-                led_animation = led_animation.to_json() if led_animation is not None else {}
+                led_animation = (
+                    led_animation.to_json() if led_animation is not None else {}
+                )
                 return {"animation": {led_animation}}, self.HttpCodes.OK
             except Exception as e:
                 return {"error": str(e)}, self.HttpCodes.BAD_REQUEST
@@ -83,7 +85,9 @@ class LEDControllerService(Service):
             methods=["post"],
         )
         def update_led_animation(led_id):
-            return get_function_result(self.update_led(led_id, {"animation":request.json}))
+            return get_function_result(
+                self.update_led(led_id, {"animation": request.json})
+            )
 
         @self.app.route(
             f"{self.base_url}/{self.MODULE_URL}/led-serial-handler/running",
@@ -116,7 +120,7 @@ class LEDControllerService(Service):
                 self.HttpCodes.INTERNAL_SERVER_ERROR,
                 "LED Serial Handler not initialized",
             )
-            
+
     def led(self, led_id):
         led = self._led_serial_handler.leds.get(led_id)
         if led is None:
