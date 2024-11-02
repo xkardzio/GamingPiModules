@@ -84,6 +84,7 @@ class LedSerialHandler:
 
                     self.queue.task_done()
             except queue.Empty:
+                time.sleep(0.001)
                 pass
 
     def close(self):

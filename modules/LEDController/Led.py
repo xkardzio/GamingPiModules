@@ -119,6 +119,23 @@ class Led:
     @animation_delay.setter
     def animation_delay(self, value):
         self._animation_delay = max(0, value)
+    
+    def update(self, **kwargs):
+        print(f'Pin: {self.pin} - Update: {kwargs}')
+        if "value" in kwargs:
+            self.value = kwargs["value"]
+        if "min" in kwargs:
+            self.min = kwargs["min"]
+        if "max" in kwargs:
+            self.max = kwargs["max"]
+        if "animation" in kwargs:
+            self.animation = Animation.from_json(kwargs["animation"])
+        if "animationRunning" in kwargs:
+            self.animation_running = kwargs["animationRunning"]
+        if "animationLoop" in kwargs:
+            self.animation_loop = kwargs["animationLoop"]
+        if "animationDelay" in kwargs:
+            self.animation_delay = kwargs["animationDelay"]
 
     def _process_animation(self):
         if self.animation is None:
@@ -154,9 +171,9 @@ class Led:
                 self.animation_running = False
                 break
 
-    @classmethod
-    def from_json(cls, json):
-        return cls(
+    @staticmethod
+    def from_json(json):
+        return Led(
             pin=json["pin"],
             min_value=json.get("minBrightness"),
             max_value=json.get("maxBrightness"),
@@ -171,4 +188,9 @@ class Led:
             "maxBrightness": self.max,
             "scaleAnimation": self._scale_animation,
             "value": self.value,
+            "animation": self.animation.to_json() if self.animation else None,
+            "animationRunning": self.animation_running,
+            "animationLoop": self.animation_loop,
+            "animationDelay": self.animation_delay,
+            
         }

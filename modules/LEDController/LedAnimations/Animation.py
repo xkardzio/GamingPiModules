@@ -39,13 +39,17 @@ class Animation:
 
     @classmethod
     def from_json(cls, json_data):
-        data = json.loads(json_data)
+        if isinstance(json_data, str):
+            data = json.loads(json_data)
+        else:
+            data = json_data
 
-        animation_type = data.pop("animationType", None)
+        data_copy = data.copy()
+        animation_type = data_copy.pop("animationType", None)
 
         if animation_type not in ANIMATION_CLASSES:
             raise ValueError(f"Unknown animation type: {animation_type}")
-        return ANIMATION_CLASSES[animation_type](**data)
+        return ANIMATION_CLASSES[animation_type](**data_copy)
 
     @staticmethod
     def register(cls):
