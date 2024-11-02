@@ -25,7 +25,6 @@ class KeyBinderService(KeyBinder, Service):
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/config", methods=["GET"])
         def get_config():
-            config = self.get_config()
             return get_function_result(self.get_config())
 
         @self.app.route(f"{self.base_url}/{self.MODULE_URL}/profile", methods=["POST"])

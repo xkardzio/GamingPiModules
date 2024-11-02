@@ -153,3 +153,21 @@ class Led:
             if not self.animation_loop:
                 self.animation_running = False
                 break
+    @classmethod
+    def from_json(cls, json):
+        return cls(
+            pin=json["pin"],
+            min_value=json.get("minBrightness"),
+            max_value=json.get("maxBrightness"),
+            scale_animation=json.get("scaleAnimation", True),
+            serialHandler=Led.serialHandler,
+        )
+        
+    def to_json(self):
+        return {
+            "pin": self.pin,
+            "minBrightness": self.min,
+            "maxBrightness": self.max,
+            "scaleAnimation": self._scale_animation,
+            "value" : self.value
+        }

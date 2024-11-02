@@ -21,7 +21,7 @@ if led_serial_port is None:
     led_serial_port = input("Enter the serial port for the LED controller: ")
 
 if led_serial_port is not None:
-    led_serial_handler = LedSerialHandler(led_serial_port)
+    led_serial_handler = LedSerialHandler(led_serial_port, baudrate=115200)
 else:
     led_serial_handler = None
 
@@ -33,5 +33,6 @@ ledc = LEDControllerService(
 )
 
 
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=False)
