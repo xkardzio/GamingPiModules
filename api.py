@@ -1,44 +1,36 @@
-from modules import Service, KeyBinderService, get_function_result
+from modules import (
+    MainService,
+    KeyBinderService,
+    LEDControllerService,
+    get_function_result,
+)
+from modules.LEDController import LedSerialHandler
+
 from flask import Flask, request, render_template
+import os
 
-apiService = Service(base_url="/launcher-api", template="base.html")
-kb = KeyBinderService()
-
+BASE_URL = "/launcher-api"
 app = Flask(__name__)
 
+apiService = MainService(app=app, base_url=BASE_URL, template="base.html")
+kb = KeyBinderService(app=app, base_url=BASE_URL, template="key-binder.html")
 
-@app.route(f"{apiService.base_url}/{kb.base_url}", methods=["GET"])
-def KeyBinder_page():
-    return render_template(f"{kb.base_url}/{kb.template}")
+led_serial_port = os.environ.get("LED_SERIAL_PORT")
 
+if led_serial_port is None:
+    led_serial_port = input("Enter the serial port for the LED controller: ")
 
-@app.route(f"{apiService.base_url}/{kb.base_url}/config", methods=["POST"])
-def load_config():
-    config = request.json
-    return get_function_result(kb.load_config(config))
+if led_serial_port is not None:
+    led_serial_handler = LedSerialHandler(led_serial_port)
+else:
+    led_serial_handler = None
 
-
-@app.route(f"{apiService.base_url}/{kb.base_url}/config", methods=["GET"])
-def get_config():
-    config = kb.get_config()
-    return get_function_result(kb.get_config())
-
-
-@app.route(f"{apiService.base_url}/{kb.base_url}/profile", methods=["POST"])
-def change_profile():
-    kb.profile = request.json
-    return get_function_result(kb.profile)
-
-
-@app.route(f"{apiService.base_url}/{kb.base_url}/profile", methods=["GET"])
-def get_profile():
-    return get_function_result(kb.profile)
-
-
-@app.route(f"{apiService.base_url}/", methods=["GET"])
-@app.route(f"/", methods=["GET"])
-def API_page():
-    return render_template(apiService.template)
+ledc = LEDControllerService(
+    app=app,
+    base_url=BASE_URL,
+    template="led-controller.html",
+    led_serial_handler=led_serial_handler,
+)
 
 
 if __name__ == "__main__":

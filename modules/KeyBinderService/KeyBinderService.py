@@ -1,12 +1,41 @@
 from ..KeyBinder import KeyBinder
 from ..Service import Service
+from ..Tools import get_function_result
+
+from flask import render_template, request
 
 
 class KeyBinderService(KeyBinder, Service):
+    MODULE_URL = "key-binder"
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, *args, **kwargs):
         KeyBinder.__init__(self, config)
-        Service.__init__(self, base_url="key-binder", template="key-binder.html")
+        Service.__init__(self, *args, **kwargs)
+
+    def register_routes(self):
+
+        @self.app.route(f"{self.base_url}/{self.MODULE_URL}", methods=["GET"])
+        def KeyBinder_page():
+            return render_template(f"{self.MODULE_URL}/{self.template}")
+
+        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/config", methods=["POST"])
+        def load_config():
+            config = request.json
+            return get_function_result(self.load_config(config))
+
+        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/config", methods=["GET"])
+        def get_config():
+            config = self.get_config()
+            return get_function_result(self.get_config())
+
+        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/profile", methods=["POST"])
+        def change_profile():
+            self.profile = request.json
+            return get_function_result(self.profile)
+
+        @self.app.route(f"{self.base_url}/{self.MODULE_URL}/profile", methods=["GET"])
+        def get_profile():
+            return get_function_result(self.profile)
 
     def load_config(self, config):
         try:
