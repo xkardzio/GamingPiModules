@@ -1,7 +1,8 @@
 from .Animation import Animation
 
+@Animation.register
 class Blink(Animation):
-    def __init__(self, on_duration, off_duration=None, on_value = 255, off_value = 0, repeat = 1):
+    def __init__(self, on_duration, off_duration=None, on_value = 255, off_value = 0, repeat = 1, *args, **kwargs):
         super().__init__(min_value=off_value, max_value=on_value)
         
         off_duration = off_duration if off_duration is not None else on_duration

@@ -1,16 +1,27 @@
 from LedSerialHandler import LedSerialHandler
 from Led import Led
-from LedAnimations import Pulse, Blink
+from LedAnimations import Pulse, Blink, Animation
+import json
 
 import time
-Led.DEFAULT_MAX = 150
-
-led_serial = LedSerialHandler(port='COM7', baudrate=115200, timeout=0)
+Led.DEFAULT_MAX = 50
+LED_PORT = 'COM8'
+try:
+    led_serial = LedSerialHandler(port=LED_PORT, baudrate=115200, timeout=0)
+except Exception as e:
+    print(e)
+    exit()
+    
+pulse_json = {
+    "animationType": "Pulse",
+    "start": 0,
+    "end": Led.DEFAULT_MAX,
+    "duration": 500,
+    "mirror": True,
+}
 
 try:
-    pulse_animation = Pulse(0, Led.DEFAULT_MAX, 1000, mirror=True)
-
-    blink_animation = Blink(1000, 1000, repeat=2)
+    pulse_animation = Animation.from_json(json.dumps(pulse_json))
 
     led = Led(3, led_serial)
     led5 = Led(5, led_serial)

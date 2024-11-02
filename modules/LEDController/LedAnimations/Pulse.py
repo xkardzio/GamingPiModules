@@ -1,7 +1,8 @@
 from .Animation import Animation
 
+@Animation.register
 class Pulse(Animation):
-    def __init__(self, start, end, duration, mirror=False):
+    def __init__(self, start, end, duration, mirror=False, *args, **kwargs):
         super().__init__(min_value=start, max_value=end)
         delay = duration / abs(end - start)
         if mirror:
