@@ -38,7 +38,7 @@ class LedSerialHandler:
         response_queue = self.send(message, read_bytes_count=1)
         response = response_queue.get()
         
-        if int.from_bytes(response) == LedSerialHandler.Response.INIT_SUCCESS.value:
+        if int.from_bytes(response, byteorder='little') == LedSerialHandler.Response.INIT_SUCCESS.value:
             return True
         else:
             return False

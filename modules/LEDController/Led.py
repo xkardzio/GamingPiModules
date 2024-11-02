@@ -59,7 +59,7 @@ class Led:
             message = bytes([self.pin, value])
             response_queue = Led.serialHandler.send(message, read_bytes_count=1)
             response = response_queue.get()
-            if int.from_bytes(response) == LedSerialHandler.Response.PIN_OK.value:
+            if int.from_bytes(response, byteorder='little') == LedSerialHandler.Response.PIN_OK.value:
                 self._value = value
             else:
                 raise Exception(f'Error setting value for pin {self.pin} - response: {LedSerialHandler.Response(response)}')

@@ -5,7 +5,7 @@ import json
 
 import time
 Led.DEFAULT_MAX = 50
-LED_PORT = 'COM8'
+LED_PORT = '/dev/ttyUSB0' # Shall be changed to the correct port. Prefered stored as a environment variable
 try:
     led_serial = LedSerialHandler(port=LED_PORT, baudrate=115200, timeout=0)
 except Exception as e:
