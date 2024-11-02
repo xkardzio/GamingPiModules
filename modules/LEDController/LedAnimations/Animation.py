@@ -36,8 +36,8 @@ class Animation:
         data = {k.lstrip('_'): serialize(v) for k, v in self.__dict__.items()}
         return json.dumps(data, ensure_ascii=False)
     
-    @staticmethod
-    def from_json(json_data):
+    @classmethod
+    def from_json(cls, json_data):
         data = json.loads(json_data)
         
         animation_type = data.pop("animationType", None)
@@ -46,6 +46,7 @@ class Animation:
             raise ValueError(f"Unknown animation type: {animation_type}")
         return ANIMATION_CLASSES[animation_type](**data)
     
+    @classmethod
     def register(cls):
         ANIMATION_CLASSES[cls.__name__] = cls
         return cls
