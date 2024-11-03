@@ -99,8 +99,9 @@ class Led:
 
     @animation.setter
     def animation(self, animation):
+        if self._animation_running:
+            self.animation_running = False
         self._animation = animation
-        self._animation_running = False
         self._current_frame = None
         self._animation_delay = 0
 
