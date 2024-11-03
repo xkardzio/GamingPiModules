@@ -5,4 +5,127 @@
 {% block content %}
 <h1>LED Controller</h1>
 <p>This page allows you to control the LEDs on the Raspberry Pi.</p>
+
+<div class="container">
+    <h3>LEDs Status</h3>
+    <div id="led-list" class="row">
+    </div>
+
+    <h3 class="mt-4">Add New LED</h3>
+    <form id="add-led-form" class="form-inline">
+        <div class="form-group mb-2">
+            <label for="led-pin" class="sr-only">LED Pin</label>
+            <input type="number" id="led-pin" class="form-control" placeholder="LED Pin" required>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Add LED</button>
+    </form>
+</div>
+
+<div id="responseMessage" class="mt-3"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const baseURL = '/launcher-api/led-controller';
+
+    async function fetchLEDs() {
+        try {
+            const response = await fetch(`${baseURL}/leds`);
+            const data = await response.json();
+
+            if (response.ok) {
+                displayLEDs(data.leds);
+            } else {
+                showMessage(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            showMessage(`Error fetching LEDs: ${error.message}`);
+        }
+    }
+
+    function displayLEDs(leds) {
+        const ledList = document.getElementById('led-list');
+        ledList.innerHTML = '';
+    
+        leds.forEach(led => {
+            const ledItem = document.createElement('div');
+            ledItem.className = 'col-md-4';
+            ledItem.innerHTML = `
+            <div class="card">
+                <details>
+                    <summary class="card-header">LED Pin: ${led.pin}</summary>
+                    <div class="card-body">
+                        <p class="card-text">Status: ${led.animationRunning ? 'Running' : 'Stopped'}</p>
+                        <p class="card-text">Animation: ${led.animation || 'None'}</p>
+                        <p class="card-text">Animation Delay: ${led.animationDelay}</p>
+                        <p class="card-text">Animation Loop: ${led.animationLoop}</p>
+                        <p class="card-text">Max Brightness: ${led.maxBrightness}</p>
+                        <p class="card-text">Min Brightness: ${led.minBrightness}</p>
+                        <p class="card-text">Scale Animation: ${led.scaleAnimation}</p>
+                        <p class="card-text">Current Value: <span id="led-value-${led.pin}">${led.value}</span></p>
+                        
+                        <!-- Input field for value -->
+                        <input type="number" min="0" max="255" value="${led.value}" 
+                               class="form-control mt-2" 
+                               onchange="updateLEDValue(${led.pin}, this.value)">
+                    </div>
+                </details>
+            </div>
+        `;
+            ledList.appendChild(ledItem);
+        });
+    }
+
+    function updateLEDValue(pin, value) {
+
+        document.getElementById(`led-value-${pin}`).innerText = value;
+
+        fetch(`/launcher-api/led-controller/leds/${pin}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ value: parseInt(value, 10) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error updating LED:', data.error);
+            } else {
+                console.log('LED updated successfully:', data.message);
+            }
+        })
+        .catch(error => console.error('Request failed:', error));
+    }
+
+    document.getElementById('add-led-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const ledPin = document.getElementById('led-pin').value;
+
+        try {
+            const response = await fetch(`${baseURL}/leds/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ leds: [{ pin: parseInt(ledPin, 10) }] })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage(data.message);
+                fetchLEDs();
+            } else {
+                showMessage(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            showMessage(`Error adding LED: ${error.message}`);
+        }
+    });
+
+    function showMessage(message) {
+        const responseMessage = document.getElementById('responseMessage');
+        responseMessage.textContent = message;
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchLEDs);
+</script>
 {% endblock %}
