@@ -17,11 +17,12 @@ kb = KeyBinderService(app=app, base_url=BASE_URL, template="key-binder.html")
 led_serial_port = os.environ.get("LED_SERIAL_PORT")
 
 if led_serial_port is None:
-    led_serial_port = input("Enter the serial port for the LED controller: ")
+    led_serial_port = str(input("Enter the serial port for the LED controller: ")).strip()
 
-if led_serial_port is not None:
+if len(led_serial_port) > 0:
     led_serial_handler = LedSerialHandler(led_serial_port, baudrate=115200)
 else:
+    print("Launching LEDController without led handler")
     led_serial_handler = None
 
 ledc = LEDControllerService(
@@ -30,7 +31,6 @@ ledc = LEDControllerService(
     template="led-controller.html",
     led_serial_handler=led_serial_handler,
 )
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
